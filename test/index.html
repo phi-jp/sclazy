@@ -1,0 +1,95 @@
+<!doctype html>
+ 
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    
+    <title>sclazy test</title>
+    <meta name="description" content="${description}" />
+    
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jade/1.11.0/jade.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/less.js/2.5.3/less.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/riot/3.9.3/riot+compiler.js'></script>
+
+    <script src='https://cdn.rawgit.com/phi-jp/firerest/v0.1.1/firerest.js'></script>
+    <script src='../sclazy.js'></script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/phi-jp/meltline/v0.1.5/meltline.css" />
+  </head>
+  <body>
+    <app></app>
+  </body>
+</html>
+
+
+<script type='riot/tag' template='jade'>
+
+app.absolute.s-full.bg-gray
+  div.container.bg-white.s-full
+    div.s-full.overflow-scroll(ref='content')
+      button(onclick='{reset}') reset
+      div.item.border.m8.p16(each='{item, index in sclazy.items}')
+        div {index}. {item.title}
+      div.p16.f.fh(if='{sclazy.isMore()}') loading
+  style(type='less').
+    html, body {
+      height: 100%;
+    }
+    :scope {
+      height: 100%;
+      .container {
+        width: 100%;
+        max-width: 960px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+  
+  script.
+    var ref = Firerest.create({
+      api: 'https://noteput-api.herokuapp.com/v1',
+      debug: true,
+    });
+    
+    this.on('mount', function() {
+      this.sclazy = Sclazy({
+        target: this.refs.content,
+      });
+
+      this.sclazy.on('load', () => {
+        ref.child('items').get({
+          page: this.sclazy.page++,
+          per: 50,
+        }).then((res) => {
+          this.sclazy.addItems(res.data.items);
+          if (res.data.page_info.next_page) {
+            this.sclazy.unlock();
+          }
+          else {
+            this.sclazy.more(false);
+          }
+          this.update();
+        });
+      });
+
+      this.sclazy.on('scrollend', () => {
+        this.sclazy.lock();
+        this.sclazy.trigger('load');
+      });
+
+      this.sclazy.trigger('load');
+      this.update();
+    });
+
+    this.reset = function() {
+      this.sclazy.reset();
+      this.update();
+    };
+
+</script>
+
+<script>
+riot.mount('app');
+</script>

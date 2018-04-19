@@ -10,9 +10,13 @@
 
       this.reset();
 
-      var self = this;
+      this.target       = options.target;
+      this.onload       = options.onload;
+      this.onscrollend  = options.onscrollend;
+      this.onpulldown   = options.onpulldown;
 
-      options.target.addEventListener('scroll', function(e) {
+      var self = this;
+      this.target.addEventListener('scroll', function(e) {
         if (self.isLocked()) return ;
 
         var max = e.target.scrollHeight - e.target.offsetHeight-1;
@@ -20,6 +24,11 @@
           self.trigger('scrollend', {
             hoge: 100,
           });
+        }
+
+        // pull to refresh for ios
+        if (e.target.scrollTop < -85) {
+          self.trigger('pulldown');
         }
       }, false);
     },
@@ -43,8 +52,13 @@
       this.trigger('load');
     },
 
-    next: function() {
-
+    next: function(more) {
+      if (more) {
+        this.unlock();
+      }
+      else {
+        this.more(false);
+      }
     },
 
     lock: function() {
@@ -108,6 +122,11 @@
     },
 
     trigger: function(type, e) {
+      var func = this['on' + type];
+      if (func) {
+        func.call(this, e);
+      }
+
       if (!this._listeners[type]) return ;
 
       this._listeners[type].forEach(function(func) {

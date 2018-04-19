@@ -26,16 +26,16 @@
 
 <script type='riot/tag' template='jade'>
 
-app.absolute.s-full.bg-gray
+app.absolute.s-full.bg-lightgray
   div.container.bg-white.s-full
     div.s-full.overflow-scroll(ref='content')
-      button(onclick='{reset}') reset
       div.item.border.m8.p16(each='{item, index in sclazy.items}')
         div {index}. {item.title}
       div.p16.f.fh(if='{sclazy.isMore()}') loading
   style(type='less').
     html, body {
       height: 100%;
+      overflow: hidden;
     }
     :scope {
       height: 100%;
@@ -56,37 +56,28 @@ app.absolute.s-full.bg-gray
     this.on('mount', function() {
       this.sclazy = Sclazy({
         target: this.refs.content,
-      });
-
-      this.sclazy.on('load', () => {
-        ref.child('items').get({
-          page: this.sclazy.page++,
-          per: 50,
-        }).then((res) => {
-          this.sclazy.addItems(res.data.items);
-          if (res.data.page_info.next_page) {
-            this.sclazy.unlock();
-          }
-          else {
-            this.sclazy.more(false);
-          }
+        onload: () => {
+          ref.child('items').get({
+            page: this.sclazy.page++,
+            per: 32,
+          }).then((res) => {
+            this.sclazy.addItems(res.data.items);
+            this.sclazy.next(res.data.page_info.next_page != null);
+            this.update();
+          });
+        },
+        onscrollend: () => {
+          this.sclazy.load();
+        },
+        onpulldown: () => {
+          this.sclazy.reset().load();
           this.update();
-        });
+        },
       });
 
-      this.sclazy.on('scrollend', () => {
-        this.sclazy.lock();
-        this.sclazy.trigger('load');
-      });
-
-      this.sclazy.trigger('load');
+      this.sclazy.load();
       this.update();
     });
-
-    this.reset = function() {
-      this.sclazy.reset();
-      this.update();
-    };
 
 </script>
 

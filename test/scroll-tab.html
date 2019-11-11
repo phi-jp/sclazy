@@ -29,6 +29,9 @@
 app.absolute.s-full.bg-lightgray
   div.container.bg-white.s-full
     div.s-full.overflow-scroll(ref='content')
+      div.f.flex-between.w-full
+        button.button.w-full(onclick='{switchTest1}') TEST1
+        button.button.w-full(onclick='{switchTest2}') TEST2
       div.item.border.m8.p16(each='{item, index in sclazy.items}')
         div {index}. {item.title}
       div.p16.f.fh(if='{sclazy.isMore()}') loading
@@ -56,11 +59,13 @@ app.absolute.s-full.bg-lightgray
     this.on('mount', function() {
       this.sclazy = Sclazy({
         target: this.refs.content,
-        onload: () => {
-          ref.child(this.sclazy.page++ + '.json').get().then((res) => {
-            this.sclazy.addItems(res.data.items);
-            this.sclazy.next(res.data.next_page != null);
-            this.update();
+        onload: (e) => {
+          ref.child(e.page++ + '.json').get().then((res) => {
+            setTimeout(() => {
+              e.addItems(res.data.items);
+              this.sclazy.next(res.data.next_page != null);
+              this.update();
+            }, Math.random() * 500);
           });
         },
         onscrollend: () => {
@@ -75,6 +80,16 @@ app.absolute.s-full.bg-lightgray
       this.sclazy.load();
       this.update();
     });
+    
+    this.switchTest1 = () => {
+      this.sclazy.type = 'test1';
+      this.sclazy.reset().load();
+    };
+
+    this.switchTest2 = () => {
+      this.sclazy.type = 'test2';
+      this.sclazy.reset().load();
+    };
 
 </script>
 

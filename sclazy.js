@@ -34,15 +34,37 @@
       }, false);
     },
 
+    getData: function(type) {
+      type = type || this.type;
+      return this._data[type] = this._data[type] || {
+        type: type,
+        items: [],
+        page: 1,
+        addItems: this.addItems,
+        addItem: this.addItems,
+      };
+    },
+
+    set items(items) {
+      this.getData().items = items;
+    },
+
     get items() {
-      return this._items[this.type] = this._items[this.type] || [];
+      return this.getData().items;
+    },
+
+    set page(v) {
+      this.getData().page = v;
+    },
+
+    get page() {
+      return this.getData().page;
     },
 
     reset: function() {
       this._locked = false;
       this._more = true;
-      this._items = {};
-      this.page = 1;
+      this._data = {};
 
       return this;
     },
@@ -53,7 +75,7 @@
 
       this.lock();
 
-      this.trigger('load');
+      this.trigger('load', this.getData());
     },
 
     next: function(more) {
@@ -87,9 +109,7 @@
     },
 
     addItem: function(item) {
-      this.items.push(item);
-      this.update();
-      return this;
+      return this.addItems([item]);
     },
 
     addItems: function(items) {

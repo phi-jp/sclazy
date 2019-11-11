@@ -14,6 +14,7 @@
       this.onload       = options.onload;
       this.onscrollend  = options.onscrollend;
       this.onpulldown   = options.onpulldown;
+      this.type         = options.type || 'default';
 
       var self = this;
       this.target.addEventListener('scroll', function(e) {
@@ -33,11 +34,14 @@
       }, false);
     },
 
+    get items() {
+      return this._items[this.type] = this._items[this.type] || [];
+    },
+
     reset: function() {
       this._locked = false;
       this._more = true;
-
-      this.items = [];
+      this._items = {};
       this.page = 1;
 
       return this;

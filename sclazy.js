@@ -18,18 +18,16 @@
 
       var self = this;
       this.target.addEventListener('scroll', function(e) {
+        // pull to refresh for ios
+        if (e.target.scrollTop < -85) {
+          self.trigger('pulldown');
+        }
+
         if (self.isLocked()) return ;
 
         var max = e.target.scrollHeight - e.target.offsetHeight-1;
         if (e.target.scrollTop >= max) {
-          self.trigger('scrollend', {
-            hoge: 100,
-          });
-        }
-
-        // pull to refresh for ios
-        if (e.target.scrollTop < -85) {
-          self.trigger('pulldown');
+          self.trigger('scrollend');
         }
       }, false);
     },

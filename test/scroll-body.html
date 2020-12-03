@@ -29,9 +29,10 @@
 app.absolute.s-full
   div.container.s-full
     div.bg-white(ref='content')
-      div.item.border.m8.p16(each='{item, index in sclazy.items}')
-        div {index}. {item.title}
-      div.p16.f.fh(if='{sclazy.isMore()}') loading
+      div.p16
+        div.item.border.m8.p16(each='{item, index in sclazy.items}')
+          div {index}. {item.title}
+      div.p16.f.fh(if='{sclazy.isMore && sclazy.isMore()}') loading
   style(type='less').
     :scope {
       height: 100%;
@@ -41,22 +42,34 @@ app.absolute.s-full
         margin-left: auto;
         margin-right: auto;
       }
+
+      .item:last-child {
+        background: rgb(240, 240, 255);
+      }
     }
   
   script.
+    this.sclazy = {};
+    
     var ref = Firerest.create({
       api: 'data',
       debug: true,
     });
+
+    var wait = (time) => new Promise((resolve) => {
+      setTimeout(resolve, time);
+    });
     
     this.on('mount', function() {
       this.sclazy = Sclazy({
-        onload: () => {
-          ref.child(this.sclazy.page++ + '.json').get().then((res) => {
-            this.sclazy.addItems(res.data.items);
-            this.sclazy.next(res.data.next_page != null);
-            this.update();
-          });
+        onload: async () => {
+          // 確認用にちょっと待つ
+          await wait(1000);
+
+          var res = await ref.child(this.sclazy.page++ + '.json').get()
+          this.sclazy.addItems(res.data.items);
+          this.sclazy.next(res.data.next_page != null);
+          this.update();
         },
         onscrollend: () => {
           this.sclazy.load();

@@ -5,7 +5,7 @@
   };
 
   Sclazy.prototype = {
-    init: function(options) {
+    init(options) {
       this._listeners = [];
 
       this.reset();
@@ -16,18 +16,25 @@
       this.onpulldown   = options.onpulldown;
       this.type         = options.type || 'default';
 
-      var self = this;
-      this.target.addEventListener('scroll', function(e) {
+      // 省略されていた場合は document を代入する
+      if (!this.target) {
+        this.target = document;
+      }
+
+      var scrollingElement = (this.target === document) ? document.documentElement : this.target;
+      this.target.addEventListener('scroll', (e) => {
+        var scrollTop = scrollingElement.scrollTop;
+
         // pull to refresh for ios
-        if (e.target.scrollTop < -85) {
-          self.trigger('pulldown');
+        if (scrollTop < -85) {
+          this.trigger('pulldown');
         }
 
-        if (self.isLocked()) return ;
+        if (this.isLocked()) return ;
 
-        var max = e.target.scrollHeight - e.target.offsetHeight-1;
-        if (e.target.scrollTop >= max) {
-          self.trigger('scrollend');
+        var max = scrollingElement.scrollHeight - scrollingElement.clientHeight-1;
+        if (scrollTop >= max) {
+          this.trigger('scrollend');
         }
       }, false);
     },
@@ -113,6 +120,10 @@
     addItems: function(items) {
       Array.prototype.push.apply(this.items, items);
       return this;
+    },
+
+    destroy() {
+      
     },
 
     on: function(type, func) {

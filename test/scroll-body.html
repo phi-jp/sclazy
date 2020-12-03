@@ -16,30 +16,23 @@
     <script src='https://cdn.rawgit.com/phi-jp/firerest/v0.1.1/firerest.js'></script>
     <script src='../sclazy.js'></script>
 
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/phi-jp/meltline@v0.1.12/meltline.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/phi-jp/meltline/v0.1.5/meltline.css" />
   </head>
-  <body>
-    <app></app>
+  <body class='bg-lightgray'>
+    <div data-is='app'></div>
   </body>
 </html>
 
 
 <script type='riot/tag' template='jade'>
 
-app.absolute.s-full.bg-lightgray
-  div.container.bg-white.s-full
-    div.s-full.overflow-scroll(ref='content')
-      div.f.flex-between.w-full.sticky.t0
-        button.button.w-full(onclick='{switchTest1}') TEST1
-        button.button.w-full(onclick='{switchTest2}') TEST2
+app.absolute.s-full
+  div.container.s-full
+    div.bg-white(ref='content')
       div.item.border.m8.p16(each='{item, index in sclazy.items}')
         div {index}. {item.title}
       div.p16.f.fh(if='{sclazy.isMore()}') loading
   style(type='less').
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
     :scope {
       height: 100%;
       .container {
@@ -58,14 +51,11 @@ app.absolute.s-full.bg-lightgray
     
     this.on('mount', function() {
       this.sclazy = Sclazy({
-        target: this.refs.content,
-        onload: (e) => {
-          ref.child(e.page++ + '.json').get().then((res) => {
-            setTimeout(() => {
-              e.addItems(res.data.items);
-              this.sclazy.next(res.data.next_page != null);
-              this.update();
-            }, Math.random() * 500);
+        onload: () => {
+          ref.child(this.sclazy.page++ + '.json').get().then((res) => {
+            this.sclazy.addItems(res.data.items);
+            this.sclazy.next(res.data.next_page != null);
+            this.update();
           });
         },
         onscrollend: () => {
@@ -80,16 +70,6 @@ app.absolute.s-full.bg-lightgray
       this.sclazy.load();
       this.update();
     });
-    
-    this.switchTest1 = () => {
-      this.sclazy.type = 'test1';
-      this.sclazy.reset().load();
-    };
-
-    this.switchTest2 = () => {
-      this.sclazy.type = 'test2';
-      this.sclazy.reset().load();
-    };
 
 </script>
 

@@ -26,16 +26,16 @@
 
 <script type='riot/tag' template='jade'>
 
-app.absolute.s-full
-  div.container.s-full
+app
+  div.container
     div.bg-white(ref='content')
       div.p16
         div.item.border.m8.p16(each='{item, index in sclazy.items}')
           div {index}. {item.title}
       div.p16.f.fh(if='{sclazy.isMore && sclazy.isMore()}') loading
+  div.fixed.t0.r0.p16.bg-black.text-white.p8 {scrollY}
   style(type='less').
     :scope {
-      height: 100%;
       .container {
         width: 100%;
         max-width: 960px;
@@ -82,6 +82,11 @@ app.absolute.s-full
 
       this.sclazy.load();
       this.update();
+
+
+      this.sclazy.target.addEventListener('scroll', () => {
+        this.update();
+      });
     });
 
 </script>
